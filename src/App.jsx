@@ -1,283 +1,190 @@
-import React, { useState, useEffect } from 'react';
-import {
-  Container,
-  Row,
-  Col,
-  Button,
-  ListGroup,
-  Modal,
-  Form
-} from 'react-bootstrap';
-import AppNavbar from './components/Navbar';
-import ExpenseForm from './components/ExpenseForm';
-import ExpenseList from './components/ExpenseList';
-import SummaryGraph from './components/SummaryGraph';
+import { useEffect, useState } from 'react';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
-import AOS from 'aos';
-import 'aos/dist/aos.css';
-import { saveExpenses, getExpenses } from './utils/storage';
-import './components/SummaryGraph';
-function App() {
-  const [expenses, setExpenses] = useState([]);
-  const [salary, setSalary] = useState(parseFloat(localStorage.getItem('monthlySalary') || 0));
-  const [activePage, setActivePage] = useState('dashboard');
-  const [showForm, setShowForm] = useState(false);
-  const [showSalaryInput, setShowSalaryInput] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const isFormInline = activePage === 'today' || activePage === 'add';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import slide1 from './assets/Slide1.jpg';
+import slide2 from './assets/Slide2.jpg';
+import slide3 from './assets/Slide3.jpg';
+import { motion } from 'framer-motion';
+import { Routes, Route, useNavigate } from 'react-router-dom';
+import Expenses from './components/Expense'; 
+
+function AppContent() {
+  const navigate = useNavigate();
+
+  const heroSlides = [
+    { image: slide1, title: "Track Every Rupee", highlight: "With Xpense Distributor", subtext: "Split and settle group expenses easily and transparently." },
+    { image: slide2, title: "Simplify Shared Costs", highlight: "For Friends, Teams & Families", subtext: "Automatically calculate who owes what in seconds." },
+    { image: slide3, title: "Built for Collaboration", highlight: "Stay On Top of Group Expenses", subtext: "Real-time updates, detailed reports, and seamless settlements." }
+  ];
+
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [animate, setAnimate] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+  const [showSignup, setShowSignup] = useState(false);
 
   useEffect(() => {
-    AOS.init();
-    setExpenses(getExpenses());
+    setAnimate(true);
+    const timeout = setTimeout(() => setAnimate(false), 1000);
+    return () => clearTimeout(timeout);
+  }, [currentSlide]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+    }, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
-    saveExpenses(expenses);
-  }, [expenses]);
+    const content = document.querySelector('.hero-content');
+    if (content) {
+      content.classList.remove('fadeIn');
+      void content.offsetWidth;
+      content.classList.add('fadeIn');
+    }
+  }, [currentSlide]);
 
-  useEffect(() => {
-    localStorage.setItem('monthlySalary', salary);
-  }, [salary]);
+  const toggleMenu = () => setMenuOpen(!menuOpen);
+  const handleNavLinkClick = () => setMenuOpen(false);
 
-  const addExpense = (expense) => setExpenses([...expenses, expense]);
-
-  const handleAdd = (expense) => {
-    addExpense(expense);
-    setShowForm(false);
-    setSelectedCategory('');
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setShowLogin(false);
+    setShowSignup(false);
+    navigate('/expenses');
   };
 
-  const today = new Date().toISOString().split('T')[0];
-  const currentMonth = new Date().toISOString().slice(0, 7);
-  const currentDate = new Date();
-  const isMonthEnd = currentDate.getDate() >= 28;
-  const uniqueDates = [...new Set(expenses.map(exp => exp.date))];
-  const todaysExpenses = expenses.filter(exp => exp.date === today);
-  const monthlyExpenses = expenses.filter(exp => exp.date.startsWith(currentMonth));
-  const totalSpent = monthlyExpenses.reduce((sum, exp) => sum + parseFloat(exp.amount), 0);
-  const balanceLeft = salary - totalSpent;
-
-  const renderSidebar = () => (
-    <ListGroup className="sidebar-menu">
-      <ListGroup.Item action active={activePage === 'dashboard'} onClick={() => setActivePage('dashboard')}>
-        🧠 Dashboard
-      </ListGroup.Item>
-      <ListGroup.Item action active={activePage === 'today'} onClick={() => setActivePage('today')}>
-        📅 Today
-      </ListGroup.Item>
-      <ListGroup.Item>
-        📆 By Date
-        <ListGroup className="date-submenu mt-2">
-          {uniqueDates.map(date => (
-            <ListGroup.Item
-              key={date}
-              action
-              active={activePage === `date-${date}`}
-              onClick={() => setActivePage(`date-${date}`)}
-            >
-              {date}
-            </ListGroup.Item>
-          ))}
-        </ListGroup>
-      </ListGroup.Item>
-      {isMonthEnd && (
-        <ListGroup.Item action active={activePage === 'graph'} onClick={() => setActivePage('graph')}>
-          📈 Monthly Graph
-        </ListGroup.Item>
-      )}
-      <ListGroup.Item action active={activePage === 'add'} onClick={() => setActivePage('add')}>
-        ➕ Add Expense
-      </ListGroup.Item>
-      <ListGroup.Item action active={activePage === 'categories'} onClick={() => setActivePage('categories')}>
-        🗂️ Categories
-      </ListGroup.Item>
-      <ListGroup.Item action active={activePage === 'stats'} onClick={() => setActivePage('stats')}>
-        📊 Stats
-      </ListGroup.Item>
-      <ListGroup.Item action active={activePage === 'theme'} onClick={() => setActivePage('theme')}>
-        🎨 Theme
-      </ListGroup.Item>
-      <ListGroup.Item action active={activePage === 'backup'} onClick={() => setActivePage('backup')}>
-        🔁 Backup
-      </ListGroup.Item>
-    </ListGroup>
-  );
-
-  const SalaryModal = () => {
-    const [input, setInput] = useState('');
-
-    return (
-      <Modal show={showSalaryInput} onHide={() => setShowSalaryInput(false)} className="neon-modal">
-        <Modal.Header closeButton className="neon-header">
-          <Modal.Title className="neon-title">Set Monthly Salary</Modal.Title>
-        </Modal.Header>
-        <Modal.Body className="neon-body">
-          <Form.Group>
-            <Form.Control
-              type="number"
-              placeholder="Enter your salary"
-              className="neon-input"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-            />
-          </Form.Group>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button className="neon-glow-button" onClick={() => {
-            setSalary(parseFloat(input));
-            setShowSalaryInput(false);
-          }}>
-            Save Salary
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    );
-  };
-
-  const BalanceIndicator = () => {
-    const mood = balanceLeft > 1000 ? '🤑' : balanceLeft > 0 ? '😬' : '💀';
-    const percent = Math.max(0, Math.min(100, (balanceLeft / salary) * 100));
-
-    return (
-      <div className="balance-card" data-aos="fade-up">
-        <h4>💰 Balance Left This Month</h4>
-        <div className="liquid-meter" style={{ '--percent': `${percent}%` }}>
-          <div className="amount">₹{balanceLeft.toFixed(2)} {mood}</div>
-        </div>
-      </div>
-    );
-  };
-const renderCategorizedExpenses = (list) => {
-  const categorized = {};
-
-  list.forEach(exp => {
-    const category = exp.category || 'Uncategorized';
-    if (!categorized[category]) categorized[category] = [];
-    categorized[category].push(exp);
-  });
-
-  return (
-    <div>
-      {Object.entries(categorized).map(([category, items]) => (
-        <div key={category} className="mb-4">
-          <h5 className="neon-subtitle">{category}</h5>
-          <ul className="expense-list">
-            {items.map(item => (
-              <li key={item.id} className="expense-item">
-                <div className="expense-details">
-                  <span>{item.description || 'No description'}</span>
-                  <span className="expense-date">{item.date}</span>
-                </div>
-                <div className="expense-amount">₹{parseFloat(item.amount).toFixed(2)}</div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
-    </div>
-  );
-};
-
-  const renderContent = () => {
-  const renderExpensesWithForm = (filteredList) => (
-    <div className="d-md-flex flex-md-row gap-4">
-      <div className="flex-fill">
-        {renderCategorizedExpenses(filteredList)}
-      </div>
-      <div className="flex-shrink-0" style={{ minWidth: '300px' }}>
-        <ExpenseForm
-          show={true}
-          handleClose={() => setActivePage('dashboard')}
-          addExpense={handleAdd}
-          presetCategory=""
-        />
-      </div>
-    </div>
-  );
-
-  if (activePage === 'dashboard') {
-    return (
-      <div className="dashboard-section">
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <h2 className="neon-text">Welcome back 👋</h2>
-          <Button className="neon-glow-button" onClick={() => setShowSalaryInput(true)}>Set Salary</Button>
-        </div>
-        <BalanceIndicator />
-        <p className="sub-text">Total spent: ₹{totalSpent.toFixed(2)} / ₹{salary.toFixed(2)}</p>
-        {isMonthEnd && <SummaryGraph expenses={monthlyExpenses} />}
-        <ExpenseList expenses={expenses.slice(-5)} />
-      </div>
-    );
-  }
-
-  if (activePage === 'today') {
-    return renderExpensesWithForm(todaysExpenses);
-  }
-
-  if (activePage.startsWith('date-')) {
-    const selectedDate = activePage.replace('date-', '');
-    const filtered = expenses.filter(exp => exp.date === selectedDate);
-    return renderCategorizedExpenses(filtered);
-  }
-
-  if (activePage === 'add') {
-    const filtered = expenses.filter(exp => exp.date === today);
-    return renderExpensesWithForm(filtered);
-  }
-
-  if (activePage === 'graph') {
-    return isMonthEnd ? (
-      <SummaryGraph expenses={monthlyExpenses} />
-    ) : (
-      <div className="neon-text">📆 Graphs available only at month-end.</div>
-    );
-  }
-
-  if (activePage === 'categories') return <div className="neon-text">📂 Category-wise breakdown coming soon!</div>;
-  if (activePage === 'stats') return <div className="neon-text">📊 Insightful stats on your expenses — coming soon!</div>;
-  if (activePage === 'backup') return <div className="neon-text">🔁 Backup to cloud feature under development.</div>;
-  if (activePage === 'theme') {
-    return (
-      <div className="neon-text">
-        <h2>🎨 Theme Settings</h2>
-        <p className="sub-text">Dark mode is the only mode. More themes coming soon.</p>
-      </div>
-    );
-  }
-
-  return null;
-};
-
-
-       
-
-  
   return (
     <>
-      <AppNavbar />
-      <Container fluid className="app-wrapper">
-        <Row className="no-gutters flex-grow-1">
-          <Col md={3} className="sidebar-container">
-            {renderSidebar()}
-          </Col>
-          <Col md={9} className="content-container">
-            {renderContent()}
-          </Col>
-        </Row>
-      </Container>
+     {/* Navbar */}
+      <nav className="navbar navbar-expand-lg fixed-top">
+        <div className="container-fluid px-4">
+          <a className="navbar-brand fw-bold text-white fs-3" href="#">Xpenses</a>
+          <button className="navbar-toggler" type="button" onClick={toggleMenu}>
+            <span className="navbar-toggler-icon"></span>
+          </button>
+          <div className={`collapse navbar-collapse justify-content-end ${menuOpen ? 'show' : ''}`}>
+            <ul className="navbar-nav fw-bold text-end">
+              <li className="nav-item">
+                <a href="#login" className="nav-link" onClick={() => { setShowLogin(true); handleNavLinkClick(); }}>Login</a>
+              </li>
+              <li className="nav-item">
+                <a href="#signup" className="nav-link" onClick={() => { setShowSignup(true); handleNavLinkClick(); }}>Sign Up</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
 
-     {!isFormInline && (
-  <ExpenseForm
-    show={showForm}
-    handleClose={() => setShowForm(false)}
-    addExpense={handleAdd}
-    presetCategory={selectedCategory}
-  />
+      {/* Hero Section */}
+      <div id="home" className="hero-section-wrapper">
+        <div className="hero-slide" style={{
+          backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${heroSlides[currentSlide].image})`
+        }}>
+          <div className="hero-content slide-up">
+            <h1 className={`hero-title ${animate ? 'bounce' : ''}`}>
+              {heroSlides[currentSlide].title}<br />
+              <motion.span
+                key={heroSlides[currentSlide].highlight}
+                initial={{ width: 0 }}
+                animate={{ width: "100%" }}
+                transition={{ duration: 2, ease: "linear" }}
+                className="typing-text"
+              >
+                {heroSlides[currentSlide].highlight}
+              </motion.span>
+            </h1>
+            <p className="hero-subtext mt-3">{heroSlides[currentSlide].subtext}</p>
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              className="btn btn-primary mt-4 px-4 py-2"
+              onClick={() => setShowLogin(true)}
+            >
+              Let’s Start
+            </motion.button>
+          </div>
+        </div>
+
+        {/* Slide Indicators */}
+        <div className="slide-indicators">
+          {heroSlides.map((_, index) => (
+            <span key={index} className={`indicator ${index === currentSlide ? 'active' : ''}`}></span>
+          ))}
+        </div>
+
+        {/* Nav Buttons */}
+        <button className="nav-button left" onClick={() => setCurrentSlide((currentSlide - 1 + heroSlides.length) % heroSlides.length)}>❮</button>
+        <button className="nav-button right" onClick={() => setCurrentSlide((currentSlide + 1) % heroSlides.length)}>❯</button>
+      </div>
+
+      {/* Login Modal */}
+      {showLogin && (
+  <div className="modal fade show d-block" tabIndex="-1">
+    <div className="modal-dialog modal-dialog-centered">
+      <div className="modal-content p-4">
+        <h5 className="modal-title mb-3">Login</h5>
+        <form onSubmit={handleSubmit}>
+          <input type="email" placeholder="Email" className="form-control mb-2" required />
+          <input type="password" placeholder="Password" className="form-control mb-3" required />
+          <div className="d-flex justify-content-between">
+            <button type="button" className="btn btn-secondary" onClick={() => setShowLogin(false)}>Cancel</button>
+            <button type="submit" className="btn btn-primary">Login</button>
+          </div>
+        </form>
+        <div className="mt-3 text-center">
+          <small>
+            New here?{" "}
+            <button className="btn btn-link p-0" onClick={() => { setShowLogin(false); setShowSignup(true); }}>
+              Sign Up
+            </button>
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
 )}
 
-
-      <SalaryModal />
+      {/* Signup Modal */}
+      {showSignup && (
+  <div className="modal fade show d-block" tabIndex="-1">
+    <div className="modal-dialog modal-dialog-centered">
+      <div className="modal-content p-4">
+        <h5 className="modal-title mb-3">Sign Up</h5>
+        <form onSubmit={handleSubmit}>
+          <input type="text" placeholder="Name" className="form-control mb-2" required />
+          <input type="email" placeholder="Email" className="form-control mb-2" required />
+          <input type="password" placeholder="Password" className="form-control mb-3" required />
+          <div className="d-flex justify-content-between">
+            <button type="button" className="btn btn-secondary" onClick={() => setShowSignup(false)}>Cancel</button>
+            <button type="submit" className="btn btn-success">Sign Up</button>
+          </div>
+        </form>
+        <div className="mt-3 text-center">
+          <small>
+            Already have an account?{" "}
+            <button className="btn btn-link p-0" onClick={() => { setShowSignup(false); setShowLogin(true); }}>
+              Login
+            </button>
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+ 
     </>
+  );
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<AppContent />} />
+      <Route path="/expenses" element={<Expenses />} />
+    </Routes>
   );
 }
 
