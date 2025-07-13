@@ -1,95 +1,223 @@
-html, body, #root {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  background: linear-gradient(135deg, #fdfbfb, #ebedee);
-  font-family: 'Poppins', sans-serif;
-  color: #222;
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+}
+.hero-section-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100vh;
   overflow: hidden;
 }
+.navbar {
+  background: transparent;
+  padding: 1rem;
+  z-index: 999;
+}
 
-.app-wrapper {
+.navbar .nav-link,
+.navbar .navbar-brand {
+  color: #fff !important;
+  text-transform: uppercase;
+  transition: color 0.3s ease;
+}
+
+.navbar .nav-link:hover {
+  color: #00ffe7 !important;
+}
+
+h2{
+  color: white;
+}
+.navbar .nav-link,
+.navbar .navbar-brand,
+.navbar span {
+  color: #ffffff !important;
+  text-transform: uppercase;
+}
+.hero-slide {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  transition: opacity 1s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 5% 10%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  animation: slideFade 1s ease forwards;
+  min-height: 100vh;
+  overflow: visible;
+  position: relative;
+  display: flex;
+  align-items: center;
+
+}
+
+@keyframes slideFade {
+  from { opacity: 0; transform: scale(1.02); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+
+
+.hero-title {
+  font-size: clamp(2.2rem, 5vw, 4rem);
+  font-weight: 700;
+  color: #fff;
+  text-align: left;
+}
+
+.typing-text {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  animation: typing 2s steps(30, end);
+  color: #00aaff;
+}
+
+@keyframes typing {
+  from { width: 0 }
+  to { width: 100% }
+}
+
+.hero-subtext {
+  font-size: clamp(1rem, 2vw, 1.3rem);
+  color: #ccc;
+  text-align: left;
+}
+
+.slide-up {
+  opacity: 0;
+  transform: translateY(40px);
+  animation: slideUp 1s ease forwards;
+}
+
+@keyframes slideUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Navigation Arrows */
+.nav-button {
+  background: none;
+  border: none;
+  font-size: 2.5rem;
+  color: white;
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  transition: transform 0.3s;
+}
+
+.nav-button.left {
+  left: 20px;
+}
+
+.nav-button.right {
+  right: 20px;
+}
+
+.nav-button:hover {
+  transform: translateY(-50%) scale(1.2);
+}
+
+/* Slide Indicators (bars/lines) */
+.slide-indicators {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  z-index: 5;
+}
+
+.indicator {
+  width: 30px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 2px;
+  transition: background 0.3s;
+}
+
+.indicator.active {
+  background: #00ffe7;
+}
+
+.hero-section {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  min-height: 100vh;
+  background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('./assets/slide1.jpg');
+  background-size: cover;
+  background-position: center;
+  padding: 5% 10%; /* Top-Bottom and Left-Right */
+  position: relative;
+}
+
+
+.hero-nav-buttons {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 20px;
+}
+
+.hero-nav-buttons button {
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid #fff;
+  color: #fff;
+  font-size: 1.5rem;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.hero-nav-buttons button:hover {
+  background: rgba(255, 255, 255, 0.5);
+  color: black;
+}
+
+
+.hero-content {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 56px);
-  padding: 0;
-  margin: 0;
+  gap: 1rem;
+  max-width: 970px;
+  margin-top: auto;   /* pushes it down responsively */
+  margin-bottom: auto; /* keeps it vertically centered-ish*/
 }
 
-.sidebar-container {
-  height: 100%;
-  overflow-y: auto;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(16px);
-  border-right: 1px solid rgba(0, 0, 0, 0.05);
-  box-shadow: 4px 0 12px rgba(0, 0, 0, 0.05);
-}
 
-.content-container {
-  height: 100%;
-  overflow-y: auto;
-  padding: 2rem;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(24px);
-  border-left: 1px solid rgba(0, 0, 0, 0.03);
-}
-
-.neon-text {
-  color: #6e00ff;
+.btn-primary {
+  background-color: #00ffe7;
+  border-color: #00ffe7;
+  color: #000;
   font-weight: bold;
-  text-shadow: 0 0 5px rgba(110, 0, 255, 0.3);
+  width: 200px;
 }
 
-.sub-text {
-  color: #666;
-  font-size: 0.95rem;
-  margin-bottom: 20px;
+.btn-primary:hover {
+  background-color: #00cfc0;
+  border-color: #00cfc0;
+  color: #000;
 }
 
-.custom-button {
-  background: linear-gradient(135deg, #ff8ae2, #8beaff);
-  border: none;
-  color: #fff;
-  font-weight: 600;
-  border-radius: 30px;
-  padding: 10px 30px;
-  transition: all 0.3s ease-in-out;
-  box-shadow: 0 4px 12px rgba(255, 138, 226, 0.4);
-}
 
-.custom-button:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 14px rgba(255, 138, 226, 0.7);
-}
-
-.sidebar-menu {
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-}
-
-.sidebar-menu .list-group-item {
-  border: none;
-  background: transparent;
-  color: #444;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  border-radius: 8px;
-  margin: 2px 0;
-}
-
-.sidebar-menu .list-group-item:hover,
-.sidebar-menu .list-group-item.active {
-  background-color: #ffe9fb;
-  color: #d100c9;
-  box-shadow: 0 0 10px rgba(209, 0, 201, 0.2);
-}
-
-.date-submenu .list-group-item {
-  font-size: 0.85rem;
-  padding: 4px 10px;
-  margin: 2px 0;
-  color: #666;
+.hero-subtext {
+  font-size: clamp(1rem, 2vw, 1.3rem);
+  color: #ddd;
+  text-align: left;
 }
