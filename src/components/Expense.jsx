@@ -1,284 +1,232 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Container,
-  Row,
-  Col,
-  Button,
-  ListGroup,
-  Modal,
-  Form
-} from 'react-bootstrap';
-import AppNavbar from './Navbar';
-import ExpenseForm from './ExpenseForm';
-import ExpenseList from './ExpenseList';
-import SummaryGraph from './SummaryGraph';
+import { Container, Row, Col, Button, Form, Card, ListGroup, Dropdown } from 'react-bootstrap';
 import './Expense.css';
-import AOS from 'aos';
-import 'aos/dist/aos.css';
-import { saveExpenses, getExpenses } from '../utils/storage';
-import './SummaryGraph';
-function App() {
-  const [expenses, setExpenses] = useState([]);
-  const [salary, setSalary] = useState(parseFloat(localStorage.getItem('monthlySalary') || 0));
-  const [activePage, setActivePage] = useState('dashboard');
-  const [showForm, setShowForm] = useState(false);
-  const [showSalaryInput, setShowSalaryInput] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const isFormInline = activePage === 'today' || activePage === 'add';
 
-  useEffect(() => {
-    AOS.init();
-    setExpenses(getExpenses());
-  }, []);
+const categories = ['Food 🍕', 'Transport 🚗', 'Shopping 🛍️', 'Bills 💡', 'Other 🌀'];
 
-  useEffect(() => {
-    saveExpenses(expenses);
-  }, [expenses]);
-
-  useEffect(() => {
-    localStorage.setItem('monthlySalary', salary);
-  }, [salary]);
-
-  const addExpense = (expense) => setExpenses([...expenses, expense]);
-
-  const handleAdd = (expense) => {
-    addExpense(expense);
-    setShowForm(false);
-    setSelectedCategory('');
-  };
-
-  const today = new Date().toISOString().split('T')[0];
-  const currentMonth = new Date().toISOString().slice(0, 7);
-  const currentDate = new Date();
-  const isMonthEnd = currentDate.getDate() >= 28;
-  const uniqueDates = [...new Set(expenses.map(exp => exp.date))];
-  const todaysExpenses = expenses.filter(exp => exp.date === today);
-  const monthlyExpenses = expenses.filter(exp => exp.date.startsWith(currentMonth));
-  const totalSpent = monthlyExpenses.reduce((sum, exp) => sum + parseFloat(exp.amount), 0);
-  const balanceLeft = salary - totalSpent;
-
-  const renderSidebar = () => (
-    <ListGroup className="sidebar-menu">
-      <ListGroup.Item action active={activePage === 'dashboard'} onClick={() => setActivePage('dashboard')}>
-        🧠 Dashboard
-      </ListGroup.Item>
-      <ListGroup.Item action active={activePage === 'today'} onClick={() => setActivePage('today')}>
-        📅 Today
-      </ListGroup.Item>
-      <ListGroup.Item>
-        📆 By Date
-        <ListGroup className="date-submenu mt-2">
-          {uniqueDates.map(date => (
-            <ListGroup.Item
-              key={date}
-              action
-              active={activePage === `date-${date}`}
-              onClick={() => setActivePage(`date-${date}`)}
-            >
-              {date}
-            </ListGroup.Item>
-          ))}
-        </ListGroup>
-      </ListGroup.Item>
-      {isMonthEnd && (
-        <ListGroup.Item action active={activePage === 'graph'} onClick={() => setActivePage('graph')}>
-          📈 Monthly Graph
-        </ListGroup.Item>
-      )}
-      <ListGroup.Item action active={activePage === 'add'} onClick={() => setActivePage('add')}>
-        ➕ Add Expense
-      </ListGroup.Item>
-      <ListGroup.Item action active={activePage === 'categories'} onClick={() => setActivePage('categories')}>
-        🗂️ Categories
-      </ListGroup.Item>
-      <ListGroup.Item action active={activePage === 'stats'} onClick={() => setActivePage('stats')}>
-        📊 Stats
-      </ListGroup.Item>
-      <ListGroup.Item action active={activePage === 'theme'} onClick={() => setActivePage('theme')}>
-        🎨 Theme
-      </ListGroup.Item>
-      <ListGroup.Item action active={activePage === 'backup'} onClick={() => setActivePage('backup')}>
-        🔁 Backup
-      </ListGroup.Item>
-    </ListGroup>
-  );
-
-  const SalaryModal = () => {
-    const [input, setInput] = useState('');
-
-    return (
-      <Modal show={showSalaryInput} onHide={() => setShowSalaryInput(false)} className="neon-modal">
-        <Modal.Header closeButton className="neon-header">
-          <Modal.Title className="neon-title">Set Monthly Salary</Modal.Title>
-        </Modal.Header>
-        <Modal.Body className="neon-body">
-          <Form.Group>
-            <Form.Control
-              type="number"
-              placeholder="Enter your salary"
-              className="neon-input"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-            />
-          </Form.Group>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button className="neon-glow-button" onClick={() => {
-            setSalary(parseFloat(input));
-            setShowSalaryInput(false);
-          }}>
-            Save Salary
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    );
-  };
-
-  const BalanceIndicator = () => {
-    const mood = balanceLeft > 1000 ? '🤑' : balanceLeft > 0 ? '😬' : '💀';
-    const percent = Math.max(0, Math.min(100, (balanceLeft / salary) * 100));
-
-    return (
-      <div className="balance-card" data-aos="fade-up">
-        <h4>💰 Balance Left This Month</h4>
-        <div className="liquid-meter" style={{ '--percent': `${percent}%` }}>
-          <div className="amount">₹{balanceLeft.toFixed(2)} {mood}</div>
-        </div>
-      </div>
-    );
-  };
-const renderCategorizedExpenses = (list) => {
-  const categorized = {};
-
-  list.forEach(exp => {
-    const category = exp.category || 'Uncategorized';
-    if (!categorized[category]) categorized[category] = [];
-    categorized[category].push(exp);
-  });
-
-  return (
-    <div>
-      {Object.entries(categorized).map(([category, items]) => (
-        <div key={category} className="mb-4">
-          <h5 className="neon-subtitle">{category}</h5>
-          <ul className="expense-list">
-            {items.map(item => (
-              <li key={item.id} className="expense-item">
-                <div className="expense-details">
-                  <span>{item.description || 'No description'}</span>
-                  <span className="expense-date">{item.date}</span>
-                </div>
-                <div className="expense-amount">₹{parseFloat(item.amount).toFixed(2)}</div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
-    </div>
-  );
-};
-
-  const renderContent = () => {
-  const renderExpensesWithForm = (filteredList) => (
-    <div className="d-md-flex flex-md-row gap-4">
-      <div className="flex-fill">
-        {renderCategorizedExpenses(filteredList)}
-      </div>
-      <div className="flex-shrink-0" style={{ minWidth: '300px' }}>
-        <ExpenseForm
-          show={true}
-          handleClose={() => setActivePage('dashboard')}
-          addExpense={handleAdd}
-          presetCategory=""
-        />
-      </div>
-    </div>
-  );
-
-  if (activePage === 'dashboard') {
-    return (
-      <div className="dashboard-section">
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <h2 className="neon-text">Welcome back 👋</h2>
-          <Button className="neon-glow-button" onClick={() => setShowSalaryInput(true)}>Set Salary</Button>
-        </div>
-        <BalanceIndicator />
-        <p className="sub-text">Total spent: ₹{totalSpent.toFixed(2)} / ₹{salary.toFixed(2)}</p>
-        {isMonthEnd && <SummaryGraph expenses={monthlyExpenses} />}
-        <ExpenseList expenses={expenses.slice(-5)} />
-      </div>
-    );
-  }
-
-  if (activePage === 'today') {
-    return renderExpensesWithForm(todaysExpenses);
-  }
-
-  if (activePage.startsWith('date-')) {
-    const selectedDate = activePage.replace('date-', '');
-    const filtered = expenses.filter(exp => exp.date === selectedDate);
-    return renderCategorizedExpenses(filtered);
-  }
-
-  if (activePage === 'add') {
-    const filtered = expenses.filter(exp => exp.date === today);
-    return renderExpensesWithForm(filtered);
-  }
-
-  if (activePage === 'graph') {
-    return isMonthEnd ? (
-      <SummaryGraph expenses={monthlyExpenses} />
-    ) : (
-      <div className="neon-text">📆 Graphs available only at month-end.</div>
-    );
-  }
-
-  if (activePage === 'categories') return <div className="neon-text">📂 Category-wise breakdown coming soon!</div>;
-  if (activePage === 'stats') return <div className="neon-text">📊 Insightful stats on your expenses — coming soon!</div>;
-  if (activePage === 'backup') return <div className="neon-text">🔁 Backup to cloud feature under development.</div>;
-  if (activePage === 'theme') {
-    return (
-      <div className="neon-text">
-        <h2>🎨 Theme Settings</h2>
-        <p className="sub-text">Dark mode is the only mode. More themes coming soon.</p>
-      </div>
-    );
-  }
-
-  return null;
-};
-
-
-       
-
+const Expense = () => {
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [income, setIncome] = useState(() => parseFloat(localStorage.getItem('income')) || 0);
+  const [incomeInput, setIncomeInput] = useState('');
+  const [expenses, setExpenses] = useState(() => JSON.parse(localStorage.getItem('expenses')) || []);
+  const [inputs, setInputs] = useState({});
+  const [descriptions, setDescriptions] = useState({});
+  const [selectedDate, setSelectedDate] = useState('');
   
+  const today = new Date().toISOString().split('T')[0];
+  const isFirst = new Date().getDate() === 1;
+
+  useEffect(() => {
+    localStorage.setItem('expenses', JSON.stringify(expenses));
+    localStorage.setItem('income', income.toString());
+  }, [expenses, income]);
+
+  const handleSetIncome = () => {
+    const value = parseFloat(incomeInput);
+    if (!isNaN(value)) {
+      setIncome(value);
+      setIncomeInput('');
+    }
+  };
+
+  const handleInputChange = (category, value) => {
+    setInputs((prev) => ({ ...prev, [category]: value }));
+  };
+
+  const handleDescriptionChange = (category, value) => {
+    setDescriptions((prev) => ({ ...prev, [category]: value }));
+  };
+
+  const handleAddExpense = (category) => {
+    const amount = parseFloat(inputs[category]);
+    const desc = descriptions[category] || '';
+    if (!isNaN(amount) && amount > 0) {
+      const newExpense = {
+        id: Date.now(),
+        date: today,
+        category,
+        amount,
+        description: desc,
+      };
+      setExpenses([...expenses, newExpense]);
+      setIncome(income - amount);
+      setInputs((prev) => ({ ...prev, [category]: '' }));
+      setDescriptions((prev) => ({ ...prev, [category]: '' }));
+    }
+  };
+
+  const handleDeleteExpense = (id, amount) => {
+    const updatedExpenses = expenses.filter(e => e.id !== id);
+    setExpenses(updatedExpenses);
+    setIncome(income + amount); // refund back the deleted amount
+  };
+
+  const todayExpenses = expenses.filter((e) => e.date === today);
+  const getCategoryExpenses = (cat, from = today) =>
+    expenses.filter((e) => e.date === from && e.category === cat);
+  const totalToday = todayExpenses.reduce((acc, e) => acc + e.amount, 0);
+
+  const allDates = [...new Set(expenses.map(e => e.date))].sort((a, b) => new Date(b) - new Date(a));
+  const byDateExpenses = selectedDate
+    ? expenses.filter((e) => e.date === selectedDate)
+    : [];
+
   return (
-    <>
-      <AppNavbar />
-      <Container fluid className="app-wrapper">
-        <Row className="no-gutters flex-grow-1">
-          <Col md={3} className="sidebar-container">
-            {renderSidebar()}
-          </Col>
-          <Col md={9} className="content-container">
-            {renderContent()}
-          </Col>
-        </Row>
-      </Container>
+    <Container fluid>
+      <Row>
+        {/* Sidebar */}
+        <Col md={2} className="bg-dark text-white p-3 min-vh-100">
+          <h5 className="mb-4">💸 Expense Tracker</h5>
+          <ListGroup variant="flush">
+            {['dashboard', 'today', 'bydate', 'stats'].map((tab) => (
+              <ListGroup.Item
+                key={tab}
+                action
+                active={activeTab === tab}
+                onClick={() => setActiveTab(tab)}
+                className="text-white bg-transparent border-0"
+                style={{ cursor: 'pointer' }}
+              >
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              </ListGroup.Item>
+            ))}
+          </ListGroup>
+        </Col>
 
-     {!isFormInline && (
-  <ExpenseForm
-    show={showForm}
-    handleClose={() => setShowForm(false)}
-    addExpense={handleAdd}
-    presetCategory={selectedCategory}
-  />
-)}
+        {/* Main Content */}
+        <Col md={10} className="p-4">
+          {activeTab === 'dashboard' && (
+            <div>
+              <h2>Welcome 👋</h2>
+              <p>Manage your expenses with discipline. Every rupee counts!</p>
+              <h5>Current Balance: ₹{income.toFixed(2)}</h5>
 
+              {isFirst && (
+                <div className="mt-4">
+                  <h6>{income > 0 ? 'Update Income for this Month:' : "It's the 1st! Enter your monthly income:"}</h6>
+                  <Form className="d-flex gap-2 flex-wrap">
+                    <Form.Control
+                      type="number"
+                      value={incomeInput}
+                      onChange={(e) => setIncomeInput(e.target.value)}
+                      placeholder="Enter income"
+                      style={{ maxWidth: '200px' }}
+                    />
+                    <Button variant="primary" onClick={handleSetIncome}>
+                      {income > 0 ? 'Update' : 'Set'} Income
+                    </Button>
+                  </Form>
+                </div>
+              )}
+            </div>
+          )}
 
-      <SalaryModal />
-    </>
+          {activeTab === 'today' && (
+            <div>
+              <h3 className="mb-4">Today's Expenses ({today})</h3>
+
+              {categories.map((cat) => (
+                <Card className="mb-3" key={cat}>
+                  <Card.Body>
+                    <Card.Title>{cat}</Card.Title>
+                    <Form className="d-flex flex-wrap gap-2">
+                      <Form.Control
+                        type="number"
+                        placeholder="Amount"
+                        value={inputs[cat] || ''}
+                        onChange={(e) => handleInputChange(cat, e.target.value)}
+                        style={{ maxWidth: '120px' }}
+                      />
+                      <Form.Control
+                        type="text"
+                        placeholder="Description (optional)"
+                        value={descriptions[cat] || ''}
+                        onChange={(e) => handleDescriptionChange(cat, e.target.value)}
+                        style={{ flex: 1 }}
+                      />
+                      <Button variant="success" onClick={() => handleAddExpense(cat)}>
+                        Add
+                      </Button>
+                    </Form>
+
+                    <ListGroup variant="flush" className="mt-3">
+                      {getCategoryExpenses(cat).map((exp) => (
+                        <ListGroup.Item key={exp.id} className="d-flex justify-content-between align-items-start">
+                          <div>
+                            <strong>₹{exp.amount}</strong>
+                            {exp.description && <div className="text-muted small">{exp.description}</div>}
+                          </div>
+                          <div className="text-end">
+                            <span className="me-2">{exp.category}</span>
+                            <Button variant="danger" size="sm" onClick={() => handleDeleteExpense(exp.id, exp.amount)}>🗑️</Button>
+                          </div>
+                        </ListGroup.Item>
+                      ))}
+                    </ListGroup>
+                  </Card.Body>
+                </Card>
+              ))}
+
+              <Card bg="info" text="white" className="p-3 text-center">
+                <h5>Total Spent Today: ₹{totalToday.toFixed(2)}</h5>
+              </Card>
+            </div>
+          )}
+
+          {activeTab === 'bydate' && (
+            <div>
+              <h3>📅 View Expenses by Date</h3>
+              <Dropdown className="my-3">
+                <Dropdown.Toggle variant="secondary">
+                  {selectedDate || 'Select a Date'}
+                </Dropdown.Toggle>
+                <Dropdown.Menu>
+                  {allDates.map((date) => (
+                    <Dropdown.Item key={date} onClick={() => setSelectedDate(date)}>
+                      {date}
+                    </Dropdown.Item>
+                  ))}
+                </Dropdown.Menu>
+              </Dropdown>
+
+              {selectedDate && (
+                <Card>
+                  <Card.Header><strong>Expenses on {selectedDate}</strong></Card.Header>
+                  <Card.Body>
+                    {categories.map((cat) => {
+                      const catExpenses = getCategoryExpenses(cat, selectedDate);
+                      if (catExpenses.length === 0) return null;
+                      return (
+                        <div key={cat} className="mb-4">
+                          <h6>{cat}</h6>
+                          <ListGroup>
+                            {catExpenses.map((e) => (
+                              <ListGroup.Item key={e.id} className="d-flex justify-content-between align-items-start">
+                                <div>
+                                  <strong>₹{e.amount}</strong>
+                                  {e.description && <div className="text-muted small">{e.description}</div>}
+                                </div>
+                                <div className="text-end">
+                                  <span>{e.category}</span>
+                                </div>
+                              </ListGroup.Item>
+                            ))}
+                          </ListGroup>
+                        </div>
+                      );
+                    })}
+                  </Card.Body>
+                </Card>
+              )}
+            </div>
+          )}
+
+         
+
+        </Col>
+      </Row>
+    </Container>
   );
-}
+};
 
-export default App;
+export default Expense;
