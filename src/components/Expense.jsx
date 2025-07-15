@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Button, Form, Card, ListGroup, Dropdown } from 'react-bootstrap';
 import './Expense.css';
+import SummaryGraph from './SummaryGraph';
 
 const categories = ['Food 🍕', 'Transport 🚗', 'Shopping 🛍️', 'Bills 💡', 'Other 🌀'];
 
@@ -221,7 +222,11 @@ const Expense = () => {
             </div>
           )}
 
-         
+          {activeTab === 'stats' && (
+  <div>
+    <SummaryGraph />
+  </div>
+)}
 
         </Col>
       </Row>
