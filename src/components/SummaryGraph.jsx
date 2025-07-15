@@ -1,23 +1,43 @@
-import React from 'react';
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
+import React, { useEffect, useState } from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
-const SummaryGraph = ({ expenses }) => {
-  const grouped = expenses.reduce((acc, curr) => {
-    acc[curr.category] = (acc[curr.category] || 0) + parseFloat(curr.amount);
-    return acc;
-  }, {});
+const SummaryGraph = () => {
+  const [data, setData] = useState([]);
 
-  const chartData = Object.entries(grouped).map(([category, amount]) => ({ category, amount }));
+  useEffect(() => {
+    const income = parseFloat(localStorage.getItem('income')) || 0;
+    const expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+
+    const grouped = {};
+
+    expenses.forEach(exp => {
+      const [year, month] = exp.date.split('-');
+      const key = `${year}-${month}`;
+      grouped[key] = grouped[key] || { month: key, expenses: 0 };
+      grouped[key].expenses += exp.amount;
+    });
+
+    const chartData = Object.keys(grouped).map(monthKey => ({
+      month: monthKey,
+      income: income,
+      expenses: grouped[monthKey].expenses,
+    }));
+
+    setData(chartData);
+  }, []);
 
   return (
-    <div className="graph-section mt-5" data-aos="fade-up">
-      <h3 className="text-white mb-3">Expense Summary 📊</h3>
-      <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={chartData}>
-          <XAxis dataKey="category" />
+    <div style={{ width: '100%', height: 400 }}>
+      <h4 className="mb-3">📊 Monthly Income vs Expenses</h4>
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data} margin={{ top: 20, right: 20, bottom: 20, left: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="month" />
           <YAxis />
           <Tooltip />
-          <Bar dataKey="amount" fill="#00ffe1" />
+          <Legend />
+          <Bar dataKey="income" fill="#82ca9d" name="Income" />
+          <Bar dataKey="expenses" fill="#f45c42" name="Expenses" />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -25,3 +45,4 @@ const SummaryGraph = ({ expenses }) => {
 };
 
 export default SummaryGraph;
+
