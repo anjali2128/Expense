@@ -13,22 +13,67 @@ const Expense = () => {
   const [inputs, setInputs] = useState({});
   const [descriptions, setDescriptions] = useState({});
   const [selectedDate, setSelectedDate] = useState('');
-  
+
   const today = new Date().toISOString().split('T')[0];
+  const thisMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
   const isFirst = new Date().getDate() === 1;
+
+  const todayExpenses = expenses.filter((e) => e.date === today);
+  const getCategoryExpenses = (cat, from = today) =>
+    expenses.filter((e) => e.date === from && e.category === cat);
+  const totalToday = todayExpenses.reduce((acc, e) => acc + e.amount, 0);
+  const totalThisMonth = expenses
+    .filter((e) => e.date.startsWith(thisMonth))
+    .reduce((acc, e) => acc + e.amount, 0);
+
+  const allDates = [...new Set(expenses.map(e => e.date))].sort((a, b) => new Date(b) - new Date(a));
+  const byDateExpenses = selectedDate
+    ? expenses.filter((e) => e.date === selectedDate)
+    : [];
+const getCurrentMonthKey = () => {
+  const now = new Date();
+  return `income-${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
+};
+
+const [monthlyIncome, setMonthlyIncome] = useState(() => {
+  const key = getCurrentMonthKey();
+  return parseFloat(localStorage.getItem(key)) || 0;
+});
+useEffect(() => {
+  localStorage.setItem('expenses', JSON.stringify(expenses));
+  localStorage.setItem('income', income.toString());
+
+  // Save monthly income
+  const key = getCurrentMonthKey();
+  if (monthlyIncome > 0) {
+    localStorage.setItem(key, monthlyIncome.toString());
+  }
+}, [expenses, income, monthlyIncome]);
+const incomeKey = getCurrentMonthKey();
+const isIncomeMissing = !localStorage.getItem(incomeKey);
+const isFirstOrMissing = new Date().getDate() === 1 || isIncomeMissing;
 
   useEffect(() => {
     localStorage.setItem('expenses', JSON.stringify(expenses));
     localStorage.setItem('income', income.toString());
   }, [expenses, income]);
 
-  const handleSetIncome = () => {
-    const value = parseFloat(incomeInput);
-    if (!isNaN(value)) {
-      setIncome(value);
-      setIncomeInput('');
+  useEffect(() => {
+    const alertThreshold = 0.9 * income;
+    if (totalToday >= alertThreshold && income > 0) {
+      alert("⚠️ Warning: You’ve used 90% or more of your income!");
     }
-  };
+  }, [totalToday, income]);
+
+ const handleSetIncome = () => {
+  const value = parseFloat(incomeInput);
+  if (!isNaN(value)) {
+    setIncome(value); // current working income
+    setMonthlyIncome(value); // monthly base salary
+    setIncomeInput('');
+  }
+};
+
 
   const handleInputChange = (category, value) => {
     setInputs((prev) => ({ ...prev, [category]: value }));
@@ -62,16 +107,6 @@ const Expense = () => {
     setIncome(income + amount); // refund back the deleted amount
   };
 
-  const todayExpenses = expenses.filter((e) => e.date === today);
-  const getCategoryExpenses = (cat, from = today) =>
-    expenses.filter((e) => e.date === from && e.category === cat);
-  const totalToday = todayExpenses.reduce((acc, e) => acc + e.amount, 0);
-
-  const allDates = [...new Set(expenses.map(e => e.date))].sort((a, b) => new Date(b) - new Date(a));
-  const byDateExpenses = selectedDate
-    ? expenses.filter((e) => e.date === selectedDate)
-    : [];
-
   return (
     <Container fluid>
       <Row>
@@ -102,23 +137,33 @@ const Expense = () => {
               <p>Manage your expenses with discipline. Every rupee counts!</p>
               <h5>Current Balance: ₹{income.toFixed(2)}</h5>
 
-              {isFirst && (
-                <div className="mt-4">
-                  <h6>{income > 0 ? 'Update Income for this Month:' : "It's the 1st! Enter your monthly income:"}</h6>
-                  <Form className="d-flex gap-2 flex-wrap">
-                    <Form.Control
-                      type="number"
-                      value={incomeInput}
-                      onChange={(e) => setIncomeInput(e.target.value)}
-                      placeholder="Enter income"
-                      style={{ maxWidth: '200px' }}
-                    />
-                    <Button variant="primary" onClick={handleSetIncome}>
-                      {income > 0 ? 'Update' : 'Set'} Income
-                    </Button>
-                  </Form>
-                </div>
-              )}
+              {isFirstOrMissing && (
+  <div className="mt-4">
+    <h6>{monthlyIncome > 0 ? 'Update Salary for this Month:' : "Enter your monthly salary:"}</h6>
+    <Form className="d-flex gap-2 flex-wrap">
+      <Form.Control
+        type="number"
+        value={incomeInput}
+        onChange={(e) => setIncomeInput(e.target.value)}
+        placeholder="Enter salary"
+        style={{ maxWidth: '200px' }}
+      />
+      <Button variant="primary" onClick={handleSetIncome}>
+        {monthlyIncome > 0 ? 'Update' : 'Set'} Salary
+      </Button>
+    </Form>
+  </div>
+)}
+
+<Card className="mt-4">
+  <Card.Body>
+    <h5>📊 Monthly Summary</h5>
+    <p>Total Income (Salary): ₹{monthlyIncome.toFixed(2)}</p>
+    <p>Total Spent: ₹{totalThisMonth.toFixed(2)}</p>
+    <p><strong>Remaining (Savings): ₹{(monthlyIncome - totalThisMonth).toFixed(2)}</strong></p>
+  </Card.Body>
+</Card>
+
             </div>
           )}
 
@@ -223,11 +268,10 @@ const Expense = () => {
           )}
 
           {activeTab === 'stats' && (
-  <div>
-    <SummaryGraph />
-  </div>
-)}
-
+            <div>
+              <SummaryGraph />
+            </div>
+          )}
         </Col>
       </Row>
     </Container>
