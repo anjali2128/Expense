@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Button, Form, Card, ListGroup, Dropdown } from 'react-bootstrap';
 import './Expense.css';
 import SummaryGraph from './SummaryGraph';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
-const categories = ['Food 🍕', 'Transport 🚗', 'Shopping 🛍️', 'Bills 💡', 'Other 🌀'];
+
 
 const Expense = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -13,10 +15,32 @@ const Expense = () => {
   const [inputs, setInputs] = useState({});
   const [descriptions, setDescriptions] = useState({});
   const [selectedDate, setSelectedDate] = useState('');
-
+  const [dateRange, setDateRange] = useState({ from: '', to: '' });
+const filteredExpenses = expenses.filter(e => {
+  const eDate = new Date(e.date);
+  const fromDate = new Date(dateRange.from);
+  const toDate = new Date(dateRange.to);
+  return dateRange.from && dateRange.to && eDate >= fromDate && eDate <= toDate;
+});
+const [budgetLimit, setBudgetLimit] = useState(() => parseFloat(localStorage.getItem('budgetLimit')) || 0);
+const categories = ['Food 🍕', 'Transport 🚗', 'Shopping 🛍️', 'Bills 💡', 'Other 🌀'];
+const exportToExcel = () => {
+  const worksheet = XLSX.utils.json_to_sheet(expenses);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Expenses');
+  const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+  const data = new Blob([excelBuffer], { type: 'application/octet-stream' });
+  saveAs(data, `Expenses_${new Date().toISOString().slice(0, 10)}.xlsx`);
+};
   const today = new Date().toISOString().split('T')[0];
   const thisMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
   const isFirst = new Date().getDate() === 1;
+const categoryStats = categories.map(cat => {
+  const total = expenses
+    .filter(e => e.date.startsWith(thisMonth) && e.category === cat)
+    .reduce((sum, e) => sum + e.amount, 0);
+  return { category: cat, total };
+});
 
   const todayExpenses = expenses.filter((e) => e.date === today);
   const getCategoryExpenses = (cat, from = today) =>
@@ -42,6 +66,7 @@ const [monthlyIncome, setMonthlyIncome] = useState(() => {
 useEffect(() => {
   localStorage.setItem('expenses', JSON.stringify(expenses));
   localStorage.setItem('income', income.toString());
+  localStorage.setItem('budgetLimit', budgetLimit.toString());
 
   // Save monthly income
   const key = getCurrentMonthKey();
@@ -107,6 +132,9 @@ const isFirstOrMissing = new Date().getDate() === 1 || isIncomeMissing;
     setIncome(income + amount); // refund back the deleted amount
   };
 
+
+
+
   return (
     <Container fluid>
       <Row>
@@ -129,8 +157,13 @@ const isFirstOrMissing = new Date().getDate() === 1 || isIncomeMissing;
           </ListGroup>
         </Col>
 
+
         {/* Main Content */}
         <Col md={10} className="p-4">
+        <Button className="mt-3 mb-3" variant="warning" onClick={exportToExcel}>
+  📁 Export All Expenses to Excel
+</Button>
+
           {activeTab === 'dashboard' && (
             <div>
               <h2>Welcome 👋</h2>
@@ -219,7 +252,7 @@ const isFirstOrMissing = new Date().getDate() === 1 || isIncomeMissing;
             </div>
           )}
 
-          {activeTab === 'bydate' && (
+                    {activeTab === 'bydate' && (
             <div>
               <h3>📅 View Expenses by Date</h3>
               <Dropdown className="my-3">
@@ -235,8 +268,27 @@ const isFirstOrMissing = new Date().getDate() === 1 || isIncomeMissing;
                 </Dropdown.Menu>
               </Dropdown>
 
+              <Form className="d-flex flex-wrap gap-3 mb-4">
+                <Form.Group>
+                  <Form.Label>From:</Form.Label>
+                  <Form.Control
+                    type="date"
+                    value={dateRange.from}
+                    onChange={(e) => setDateRange(prev => ({ ...prev, from: e.target.value }))}
+                  />
+                </Form.Group>
+                <Form.Group>
+                  <Form.Label>To:</Form.Label>
+                  <Form.Control
+                    type="date"
+                    value={dateRange.to}
+                    onChange={(e) => setDateRange(prev => ({ ...prev, to: e.target.value }))}
+                  />
+                </Form.Group>
+              </Form>
+
               {selectedDate && (
-                <Card>
+                <Card className="mb-4">
                   <Card.Header><strong>Expenses on {selectedDate}</strong></Card.Header>
                   <Card.Body>
                     {categories.map((cat) => {
@@ -264,8 +316,28 @@ const isFirstOrMissing = new Date().getDate() === 1 || isIncomeMissing;
                   </Card.Body>
                 </Card>
               )}
-            </div>
+
+              {filteredExpenses.length > 0 && (
+                <Card className="mb-4">
+                  <Card.Header><strong>Expenses from {dateRange.from} to {dateRange.to}</strong></Card.Header>
+                  <ListGroup variant="flush">
+                    {filteredExpenses.map(e => (
+                      <ListGroup.Item key={e.id} className="d-flex justify-content-between">
+                        <div>
+                          ₹{e.amount} - {e.category}
+                          {e.description && <div className="text-muted small">{e.description}</div>}
+                        </div>
+                        <div>{e.date}</div>
+                      </ListGroup.Item>
+                    ))}
+                  </ListGroup>
+                </Card>
+              )}
+            </div> // ✅ Make sure this closes the tab condition
           )}
+
+
+      
 
           {activeTab === 'stats' && (
             <div>
