@@ -18,3 +18,81 @@
 .card {
   box-shadow: 0 0 15px rgba(0,0,0,0.1);
 }
+/* Sidebar styles */
+.sidebar .list-group-item {
+  background-color: transparent;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  padding: 12px 16px;
+  font-weight: 500;
+  transition: background 0.3s, color 0.3s;
+}
+
+.sidebar .list-group-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.sidebar .list-group-item.active {
+  background-color: #0dcaf0; /* brighter cyan */
+  color: #fff;
+  border-radius: 5px;
+}
+
+/* Main content area */
+.main-content {
+  background-color: #f4f6f8;
+  min-height: 100vh;
+  padding: 24px;
+  transition: background 0.3s;
+}
+
+/* Card appearance */
+.card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: scale(1.01);
+}
+
+/* Button enhancements */
+button, .btn {
+  border-radius: 8px !important;
+  font-weight: 500;
+  transition: background 0.3s, transform 0.2s;
+}
+
+button:hover, .btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn-warning {
+  background-color: #f0ad4e;
+  border: none;
+}
+
+.btn-warning:hover {
+  background-color: #ec9f2f;
+}
+
+/* Input fields */
+input[type="number"], input[type="text"], input[type="date"] {
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .sidebar {
+    text-align: center;
+  }
+
+  .main-content {
+    padding: 16px;
+  }
+}
