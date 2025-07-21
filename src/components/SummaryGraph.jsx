@@ -5,13 +5,14 @@ import {
   Legend, ResponsiveContainer
 } from 'recharts';
 import { Dropdown, ButtonGroup, ToggleButton, Card, Row, Col, Form } from 'react-bootstrap';
-
+import "../components/Graph.css";
 const SummaryGraph = () => {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [chartType, setChartType] = useState('bar');
   const [filter, setFilter] = useState('recent');
   const [years, setYears] = useState([]);
+  const peakExpenseMonth = filteredData.reduce((max, d) => d.expenses > max.expenses ? d : max, filteredData[0]);
 
   useEffect(() => {
     const income = parseFloat(localStorage.getItem('income')) || 0;
@@ -80,28 +81,22 @@ const SummaryGraph = () => {
           </Form.Select>
         </Col>
         <Col md={6} className="text-md-end mt-2 mt-md-0">
-          <ButtonGroup toggle="true">
-            <ToggleButton
-              type="radio"
-              variant="outline-primary"
-              name="chart"
-              value="bar"
-              checked={chartType === 'bar'}
-              onChange={() => setChartType('bar')}
-            >
-              📊 Bar Chart
-            </ToggleButton>
-            <ToggleButton
-              type="radio"
-              variant="outline-primary"
-              name="chart"
-              value="line"
-              checked={chartType === 'line'}
-              onChange={() => setChartType('line')}
-            >
-              📈 Line Chart
-            </ToggleButton>
-          </ButtonGroup>
+          <div className="chart-switch-wrapper">
+  <button
+    className={`chart-switch-btn ${chartType === 'bar' ? 'active' : ''}`}
+    onClick={() => setChartType('bar')}
+  >
+    📊 Bar
+  </button>
+  <button
+    className={`chart-switch-btn ${chartType === 'line' ? 'active' : ''}`}
+    onClick={() => setChartType('line')}
+  >
+    📈 Line
+  </button>
+</div>
+
+
         </Col>
       </Row>
 
