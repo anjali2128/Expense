@@ -1,24 +1,4 @@
-.sidebar .list-group-item {
-  background-color: transparent;
-  border: none;
-  color: white;
-  cursor: pointer;
-}
-
-.sidebar .list-group-item.active {
-  background-color: #17a2b8;
-  color: white;
-}
-
-.main-content {
-  background-color: #f8f9fa;
-  min-height: 100vh;
-}
-
-.card {
-  box-shadow: 0 0 15px rgba(0,0,0,0.1);
-}
-/* Sidebar styles */
+/* ===== Sidebar Styles ===== */
 .sidebar .list-group-item {
   background-color: transparent;
   border: none;
@@ -35,12 +15,12 @@
 }
 
 .sidebar .list-group-item.active {
-  background-color: #0dcaf0; /* brighter cyan */
+  background-color: #0dcaf0;
   color: #fff;
   border-radius: 5px;
 }
 
-/* Main content area */
+/* ===== Main Content ===== */
 .main-content {
   background-color: #f4f6f8;
   min-height: 100vh;
@@ -48,7 +28,7 @@
   transition: background 0.3s;
 }
 
-/* Card appearance */
+/* ===== Card Styles ===== */
 .card {
   border: none;
   border-radius: 12px;
@@ -60,7 +40,7 @@
   transform: scale(1.01);
 }
 
-/* Button enhancements */
+/* ===== Button Enhancements ===== */
 button, .btn {
   border-radius: 8px !important;
   font-weight: 500;
@@ -80,19 +60,190 @@ button:hover, .btn:hover {
   background-color: #ec9f2f;
 }
 
-/* Input fields */
-input[type="number"], input[type="text"], input[type="date"] {
+/* ===== Input Fields ===== */
+input[type="number"],
+input[type="text"],
+input[type="date"],
+textarea,
+select {
   border-radius: 8px;
   padding: 8px 12px;
+  border: 1px solid #ced4da;
+  outline: none;
+  transition: border 0.2s;
 }
 
-/* Responsive tweaks */
+/* ===== Dark Mode Styles ===== */
+body.dark-mode {
+  background-color: #121212;
+  color: #ffffff;
+}
+
+.dark-mode .main-content {
+  background-color: #1a1a1a;
+}
+
+.dark-mode .card,
+.dark-mode .list-group-item,
+.dark-mode .dropdown-menu {
+  background-color: #1e1e1e;
+  color: #ffffff;
+}
+
+.dark-mode .form-control,
+.dark-mode .btn,
+.dark-mode .dropdown-toggle {
+  background-color: #2a2a2a;
+  color: #ffffff;
+  border-color: #444;
+}
+
+.dark-mode input,
+.dark-mode textarea,
+.dark-mode select {
+  background-color: #2a2a2a;
+  color: #fff;
+  border: 1px solid #444;
+}
+
+.dark-mode .sidebar .list-group-item {
+  color: #ccc;
+}
+
+.dark-mode .sidebar .list-group-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+/* ===== Responsive Design ===== */
 @media (max-width: 768px) {
   .sidebar {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .sidebar .list-group-item {
+    flex: 1 1 40%;
+    margin: 4px;
     text-align: center;
   }
 
   .main-content {
     padding: 16px;
   }
+}
+.daily-budget-card {
+  transition: background-color 0.3s ease;
+}
+
+body.dark-mode .daily-budget-card {
+  background-color: #1e1e1e !important;
+  color: #ffffff;
+}
+
+body:not(.dark-mode) .daily-budget-card {
+  background-color: #f8f9fa !important;
+  color: #212529;
+}
+/* ===== DARK MODE BASE ===== */
+body.dark-mode {
+  background-color: #121212;
+  color: #ffffff;
+}
+
+/* All text elements */
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode h5,
+body.dark-mode h6,
+body.dark-mode p,
+body.dark-mode span,
+body.dark-mode li,
+body.dark-mode label {
+  color: #ffffff;
+}
+
+/* Cards */
+body.dark-mode .card {
+  background-color: #1e1e1e;
+  color: #ffffff;
+  border: none;
+}
+
+/* Inputs */
+body.dark-mode input,
+body.dark-mode select,
+body.dark-mode textarea {
+  background-color: #2a2a2a;
+  color: #ffffff;
+  border: 1px solid #444;
+}
+
+/* Buttons */
+body.dark-mode .btn {
+  background-color: #333;
+  color: #fff;
+  border-color: #555;
+}
+
+body.dark-mode .btn:hover {
+  background-color: #444;
+  border-color: #666;
+}
+
+/* Dropdowns */
+body.dark-mode .dropdown-menu {
+  background-color: #1e1e1e;
+  color: #ffffff;
+  border: 1px solid #444;
+}
+
+/* Sidebar List */
+body.dark-mode .sidebar .list-group-item {
+  background-color: transparent;
+  color: #ccc;
+}
+
+body.dark-mode .sidebar .list-group-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+body.dark-mode .sidebar .list-group-item.active {
+  background-color: #0dcaf0;
+  color: #fff;
+}
+
+/* Optional: Links */
+body.dark-mode a {
+  color: #0dcaf0;
+}
+
+/* Fix table rows if any */
+body.dark-mode table,
+body.dark-mode th,
+body.dark-mode td {
+  background-color: #1e1e1e;
+  color: #fff;
+}
+/* Input fields fix for dark mode */
+body.dark-mode input[type="text"],
+body.dark-mode input[type="number"],
+body.dark-mode input[type="date"],
+body.dark-mode textarea {
+  background-color: #2a2a2a;
+  color: #ffffff;
+  border: 1px solid #444;
+}
+
+/* Placeholder text color in dark mode */
+body.dark-mode input::placeholder,
+body.dark-mode textarea::placeholder {
+  color: #bbb;
 }
