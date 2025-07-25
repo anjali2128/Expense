@@ -13,6 +13,8 @@ const SummaryGraph = () => {
   const [filter, setFilter] = useState('recent');
   const [years, setYears] = useState([]);
   const peakExpenseMonth = filteredData.reduce((max, d) => d.expenses > max.expenses ? d : max, filteredData[0]);
+  const showWarning = (entry) => entry.expenses > (entry.income * 0.7);
+  const hasDeficit = filteredData.some(d => d.savings < 0);
 
   useEffect(() => {
     const income = parseFloat(localStorage.getItem('income')) || 0;
@@ -99,6 +101,17 @@ const SummaryGraph = () => {
 
         </Col>
       </Row>
+{filteredData.some(showWarning) && (
+  <div className="text-danger fw-bold text-center mt-2">
+    ⚠️ Warning: Some months have expenses exceeding 70% of income!
+  </div>
+)}
+
+{hasDeficit && (
+  <div className="text-warning fw-semibold text-center mb-2">
+    ⚠️ Some months have negative savings!
+  </div>
+)}
 
       {filteredData.length === 0 ? (
         <p className="text-center text-muted">No data available. Add some expenses!</p>
