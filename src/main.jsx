@@ -13,7 +13,7 @@ AOS.init();
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter> {/* ✅ Router context added */}
+    <BrowserRouter> 
       <App />
     </BrowserRouter>
   </React.StrictMode>
