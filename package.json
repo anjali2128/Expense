@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-"homepage": "https://anjali2128.github.io/Expense",
+"homepage": "https://anjali2128.github.io/Expense/",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
