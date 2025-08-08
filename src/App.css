@@ -157,7 +157,7 @@ h2{
   align-items: flex-start;
   justify-content: flex-start;
   min-height: 100vh;
-  background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('./assets/slide1.jpg');
+  background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('./assets/slide1.png');
   background-size: cover;
   background-position: center;
   padding: 5% 10%; /* Top-Bottom and Left-Right */
