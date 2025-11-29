@@ -182,12 +182,11 @@ function AppContent() {
 function App() {
   return (
     <Routes>
+      <Route path="/" element={<AppContent />} />
       <Route path="expenses" element={<Expenses />} />
-<Route path="expense" element={<AppContent />} />
-
-
     </Routes>
   );
 }
+
 
 export default App;
