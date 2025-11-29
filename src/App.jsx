@@ -53,7 +53,7 @@ function AppContent() {
     e.preventDefault();
     setShowLogin(false);
     setShowSignup(false);
-    navigate('/Expense/expenses');
+    navigate('/expenses');
   };
 
   return (
@@ -183,7 +183,9 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<AppContent />} />
-      <Route path="/Expense/expenses" element={<Expenses />} />
+      <Route path="/expenses/" element={<Expenses />} />
+      <Route path="Expense" element={<AppContent />} />
+
     </Routes>
   );
 }
