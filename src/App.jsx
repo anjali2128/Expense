@@ -53,7 +53,7 @@ function AppContent() {
     e.preventDefault();
     setShowLogin(false);
     setShowSignup(false);
-    navigate('/expenses');
+    navigate('/Expense/expenses');
   };
 
   return (
